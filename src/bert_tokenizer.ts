@@ -138,8 +138,8 @@ export class BertTokenizer {
         this.vocab = this.loadVocab();
 
         this.trie = new Trie();
-        // Actual tokens start at 999.
-        for (let vocabIndex = 999; vocabIndex < this.vocab.length; vocabIndex++) {
+        // Actual tokens start at 104.
+        for (let vocabIndex = 104; vocabIndex < this.vocab.length; vocabIndex++) {
             const word = this.vocab[vocabIndex];
             this.trie.insert(word, 1, vocabIndex);
         }
@@ -239,11 +239,6 @@ export class BertTokenizer {
         let outputTokens: number[] = [];
 
         const words = this.processInput(text);
-        words.forEach((word) => {
-            if (word.text !== CLS_TOKEN && word.text !== SEP_TOKEN) {
-                word.text = `${SEPERATOR}${word.text.normalize(NFKC_TOKEN)}`;
-            }
-        });
 
         for (let i = 0; i < words.length; i++) {
             const chars = [];
@@ -262,7 +257,11 @@ export class BertTokenizer {
                 let currIndex;
 
                 while (start < end) {
-                    const substr = chars.slice(start, end).join("");
+                    let substr = chars.slice(start, end).join("");
+
+                    if (start > 0) {
+                        substr = SEPERATOR + substr;
+                    }
 
                     const match = this.trie.find(substr);
                     if (match != null && match.end != null) {
@@ -278,7 +277,7 @@ export class BertTokenizer {
                     break;
                 }
 
-                subTokens.push(currIndex);
+                subTokens.push(currIndex - 1);
                 start = end;
             }
 

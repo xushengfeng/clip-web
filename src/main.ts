@@ -144,13 +144,13 @@ function toImgInput(image: ImageData, mean: number[], std: number[]) {
     return [blueArray, greenArray, redArray];
 }
 
-import { loadTokenizer } from "./bert_tokenizer";
+import { loadTokenizer, CLS_INDEX, SEP_INDEX } from "./bert_tokenizer";
 
 function beforeText(text: string) {
     const tokenizer = loadTokenizer();
     const encoded = tokenizer.tokenize(text);
     console.log("encoded", encoded);
-    return encoded;
+    return [CLS_INDEX, ...encoded, SEP_INDEX];
 }
 
 async function runText(data: number[]) {
