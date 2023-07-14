@@ -1,7 +1,6 @@
-var cv = require("opencv.js");
 var ort: typeof import("onnxruntime-web");
 
-export { encodeImg as img, encodeText as text, initText, initImg };
+export { encodeImg as img, encodeText as text, initText, initImg, r };
 
 var dev = true;
 type AsyncType<T> = T extends Promise<infer U> ? U : never;
@@ -55,7 +54,7 @@ async function encodeImg(image: ImageData) {
         console.log(detResults);
         console.timeEnd();
     }
-    return detResults;
+    return detResults.data;
 }
 
 /** 主要操作 */
@@ -71,7 +70,7 @@ async function encodeText(text: string) {
         console.log(detResults);
         console.timeEnd();
     }
-    return detResults;
+    return detResults.data;
 }
 
 async function runImg(transposedData: number[][][], det: SessionType) {
@@ -167,4 +166,28 @@ async function runText(data: number[]) {
 
     const detResults = await text.run(detFeed);
     return detResults[text.outputNames[0]];
+}
+
+function r(img: number[], text: number[]) {
+    let r = 0;
+    if (img.length != 512 || text.length != 512) return r;
+    img = toOne(img);
+    text = toOne(text);
+    for (let i = 0; i < 512; i++) {
+        r += 100 * img[i] * text[i];
+    }
+    return r;
+}
+
+function toOne(l: number[]) {
+    let n: number[] = [];
+    let t = 0;
+    for (let i of l) {
+        t += i ** 2;
+    }
+    t = Math.sqrt(t);
+    for (let i of l) {
+        n.push(i / t);
+    }
+    return n;
 }
